@@ -3,9 +3,11 @@
 A project for AI Lab class in Van Lang University. Sudoku Solver AI.
 
 
-## Installation
+## Pre-installation
 
 ```bash
+git clone https://github.com/Tiendepchai/sudoku_algo.git
+cd sudoku_algo
 pip install -r requirements.txt
 ```
 
