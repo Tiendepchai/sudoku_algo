@@ -2,7 +2,7 @@ import math, random
 class grid:
     def __init__(self) -> None:
       self.matrix = [[0 for x in range(9)] for y in range(9)]
-      self.K = 30
+      self.K = 50
 
     def reset_board(self):
       self.matrix = [[0 for x in range(9)] for y in range(9)]
