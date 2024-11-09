@@ -47,13 +47,8 @@ class grid:
         return is_safe
     
     def fillValues(self):
-        # Fill the diagonal of SRN x SRN matrices
         self.fillDiagonal()
-
-        # Fill remaining blocks
         self.fillRemaining(0, int(9**(1/2)))
-
-        # Remove Randomly K digits to make game
         self.removeKDigits()
     
     def fillDiagonal(self):
@@ -61,28 +56,22 @@ class grid:
             self.fillBox(i, i)
 
     def fillRemaining(self, i, j):
-      # Check if we have reached the end of the matrix
       if i == 9 - 1 and j == 9:
           return True
   
-      # Move to the next row if we have reached the end of the current row
       if j == 9:
           i += 1
           j = 0
   
-      # Skip cells that are already filled
       if self.matrix[i][j] != 0:
           return self.fillRemaining(i, j + 1)
   
-      # Try filling the current cell with a valid value
       for num in range(1, 10):
           if self.check_location_is_safe(i, j, num):
               self.matrix[i][j] = num
               if self.fillRemaining(i, j + 1):
                   return True
               self.matrix[i][j] = 0
-      
-      # No valid value was found, so backtrack
       return False
 
     def fillBox(self, row, col):
@@ -119,20 +108,13 @@ class grid:
         row = l[0]
         col = l[1]
 
-        # Consider digits 1 to 9
         for num in range(1, 10):
             print(f"Trying {num} at ({row}, {col})")
-            # If looks promising
             if self.check_location_is_safe(row, col, num):
-                # Make tentative assignment
                 self.matrix[row][col] = num
                 print(f"Placed {num} at ({row}, {col})")
-
-                # Return if success
                 if self.solve_sudoku():
                     return True
-
-                # Failure, unmake and try again
                 print(f"Backtracking from {num} at ({row}, {col})")
                 self.matrix[row][col] = 0
 
