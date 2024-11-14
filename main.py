@@ -87,8 +87,8 @@ def handle_input(key, player=False):
               num_text = font.render(str(user_input), True, BLACK)
               screen.blit(num_text, (col * grid_size + 10, row * grid_size + 10))
             pygame.display.flip()
-        elif key == K_DELETE:
-            sudoku_grid.matrix[row][col] = 0
+          elif key == K_DELETE or key == K_BACKSPACE:
+            sudoku_grid.user[row][col] = 0
         elif not player:
           if key in range(K_1, K_9 + 1):
             user_input = key - K_0
@@ -96,6 +96,8 @@ def handle_input(key, player=False):
             num_text = font.render(str(user_input), True, BLACK)
             screen.blit(num_text, (col * grid_size + 10, row * grid_size + 10))
             pygame.display.flip()
+          elif key == K_DELETE or key == K_BACKSPACE:
+            sudoku_grid.matrix[row][col] = 0
 
 def solve_puzzle():
     if sudoku_grid.solve_sudoku():
