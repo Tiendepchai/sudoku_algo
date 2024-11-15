@@ -17,11 +17,6 @@ class grid:
     def show_user(self):
         for i in self.user:
             print(*i, end="\n")
-    
-    def show_sol(self):
-        for i in self.user:
-            print(*i, end="\n")
-
 
     def find_empty_location(self, l):
         for row in range(9):

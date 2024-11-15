@@ -7,6 +7,10 @@ from healthbar import *
 
 pygame.init()
 
+SHOOT_SOUND = pygame.mixer.Sound('sounds/Melstroy_blyat.mp3')
+SHOOT_SOUND.set_volume(0.2)
+
+
 WIDTH, HEIGHT = 540, 650
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Sudoku")
@@ -46,14 +50,14 @@ def draw_grid():
       pygame.draw.line(screen, GREY, (0, i * grid_size), (WIDTH, i * grid_size), 2)
 
 def draw_numbers(player=False):
-    for i in range(9):
-        for j in range(9):
-            if sudoku_grid.matrix[i][j] != 0 and not player:
-                text = font.render(str(sudoku_grid.matrix[i][j]), True, BLACK)
-                screen.blit(text, (j * grid_size + 20, i * grid_size + 10))
-            elif player and sudoku_grid.user[i][j]:
-                text = font.render(str(sudoku_grid.user[i][j]), True, BLACK)
-                screen.blit(text, (j * grid_size + 20, i * grid_size + 10))
+  for i in range(9):
+    for j in range(9):
+      if sudoku_grid.matrix[i][j] != 0 and not player:
+        text = font.render(str(sudoku_grid.matrix[i][j]), True, BLACK)
+        screen.blit(text, (j * grid_size + 20, i * grid_size + 10))
+      elif player and sudoku_grid.user[i][j]:
+        text = font.render(str(sudoku_grid.user[i][j]), True, BLACK)
+        screen.blit(text, (j * grid_size + 20, i * grid_size + 10))
 
 def draw_selected():
     if selected:
@@ -74,10 +78,12 @@ def handle_input(key, player=False):
           if key in range(K_1, K_9 + 1):
             user_input = key - K_0
             sudoku_grid.user[row][col] = user_input
+            
             if user_input != sudoku_grid.matrix[row][col]:
               # Giảm máu và tăng đếm số lần sai
               health_bar.update(20)  # Trừ 20 điểm máu mỗi khi nhập sai
               wrong_attempts += 1
+              SHOOT_SOUND.play()
 
               # Kiểm tra nếu sai 5 lần hoặc thanh máu hết
               if wrong_attempts >= 5 or health_bar.hp <= 0:
@@ -86,6 +92,7 @@ def handle_input(key, player=False):
               # Nếu nhập đúng, hiển thị số nhập đúng bằng màu đen
               num_text = font.render(str(user_input), True, BLACK)
               screen.blit(num_text, (col * grid_size + 10, row * grid_size + 10))
+              if sudoku_grid.matrix == sudoku_grid.user: menu = 5
             pygame.display.flip()
           elif key == K_DELETE or key == K_BACKSPACE:
             sudoku_grid.user[row][col] = 0
@@ -99,10 +106,6 @@ def handle_input(key, player=False):
           elif key == K_DELETE or key == K_BACKSPACE:
             sudoku_grid.matrix[row][col] = 0
 
-def solve_puzzle():
-    if sudoku_grid.solve_sudoku():
-        # Nếu giải thành công, cập nhật ma trận user để vẽ lời giải lên màn hình
-        sudoku_grid.user = [row[:] for row in sudoku_grid.solution]
 
 def generate_valid_sudoku():
     global health_bar, wrong_attempts
@@ -154,11 +157,19 @@ def draw_menu():
 ####
 def draw_game_over():
   screen.fill(WHITE)
-  title = font.render("Game Over!", True, RED)
+  title = font.render("GAME OVER!", True, RED)
   screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 100))
 
-  reset_button = draw_button("RESET", WIDTH // 2 - 70, HEIGHT // 2, 140, 50, GREEN)
+  reset_button = draw_button("AGAIN", WIDTH // 2 - 70, HEIGHT // 2, 140, 50, GREEN)
   return reset_button
+
+def draw_victory():
+  screen.fill(WHITE)
+  title = font.render("CONGRATULATIONS!", True, RED)
+  screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 2 - 100))
+
+  victory = draw_button("AGAIN", WIDTH // 2 - 70, HEIGHT // 2, 140, 50, GREEN)
+  return victory
 
 def main():
   global selected, menu, wrong_attempts, health_bar
@@ -167,9 +178,11 @@ def main():
   wrong_attempts = 0
 
   while running:
+    
     if menu == 1:
       solver_button, play_button = draw_menu()
       sudoku_grid.reset_board()
+
     elif menu == 2:
       screen.fill(WHITE)
       draw_grid()
@@ -178,6 +191,7 @@ def main():
       clear_button = draw_clear_button()
       back_button = draw_back_button()
       solve_button = draw_solve_button()
+
     elif menu == 3:
       screen.fill(WHITE)
       draw_grid()
@@ -190,13 +204,18 @@ def main():
 
       # Vẽ lại thanh máu trong mỗi vòng lặp để cập nhật chính xác
       health_bar.draw(screen)
+      
+
     elif menu == 4:
       reset_button = draw_game_over()
+    
+    else:
+      victory_button = draw_victory()
 
     for event in pygame.event.get():
       if event.type == QUIT:
-          pygame.quit()
-          sys.exit()
+        pygame.quit()
+        sys.exit()
 
       if menu == 1:
         if event.type == MOUSEBUTTONDOWN and event.button == 1:
@@ -230,10 +249,15 @@ def main():
         if event.type == KEYDOWN:
             handle_input(event.key, player=False)
       elif menu == 4:  # Màn hình Game Over
-          if event.type == MOUSEBUTTONDOWN and event.button == 1:
-              if reset_button.collidepoint(event.pos):
-                  generate_valid_sudoku()  # Bắt đầu lại trò chơi mới
-                  menu = 3  # Quay trở lại màn hình chơi
+        if event.type == MOUSEBUTTONDOWN and event.button == 1:
+          if reset_button.collidepoint(event.pos):
+            generate_valid_sudoku()  # Bắt đầu lại trò chơi mới
+            menu = 3  # Quay trở lại màn hình chơi
+      else:
+        if event.type == MOUSEBUTTONDOWN and event.button == 1:
+          if victory_button.collidepoint(event.pos):
+            generate_valid_sudoku()  # Bắt đầu lại trò chơi mới
+            menu = 3  # Quay trở lại màn hình chơi
 
     pygame.display.update()
 
